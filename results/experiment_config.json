@@ -1,0 +1,13 @@
+{
+    "lbp_points": 8,
+    "lbp_radius": 1,
+    "lbp_method": "uniform",
+    "lbp_blocks": [
+        8,
+        8
+    ],
+    "lbp_bins": 10,
+    "feature_dimension": 640,
+    "random_state": 42,
+    "cv_folds": 10
+}

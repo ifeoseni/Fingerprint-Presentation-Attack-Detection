@@ -1,0 +1,12 @@
+You can run the entire implementation from start to finish simply by opening run_pipeline.ipynb and clicking "Run All" (or executing the cells one by one).
+
+The notebook has been fully engineered to orchestrate the entire data science workflow. Just by running the notebook, it will automatically:
+
+Verify the Math: Run the lbp_verify.py script to rigorously validate the feature extraction pipeline and display sample LBP images and histograms directly in the notebook.
+Process FVC2000: Load the raw FVC2000 images, apply CLAHE enhancement, extract the 640-dimensional LBP features, and split the data into Set B (training) and Set A (testing).
+Train FVC2000 Models: Run a stratified Cross-Validation Grid Search to find the best hyperparameters, train the SVM and KNN models, and display the ROC Curves and Confusion Matrices inline.
+Process SOCOFing: Load the ~55,000 raw SOCOFing images (currently set to a 5% sample for speed, which you can change to 1.0), extract features, perform an 80/20 train/test split, and critically, automatically balance the training set by undersampling the majority class.
+Train SOCOFing Models: Tune, train, and evaluate the SVM and KNN models on the SOCOFing data, again printing all metrics and rendering the charts inline.
+Everything is wired up to work flawlessly within that single notebook interface!
+
+12:42 PM

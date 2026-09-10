@@ -1,0 +1,11 @@
+image_path,label,label_str,feature_dimension,lbp_points,lbp_radius,lbp_method,lbp_blocks,lbp_bins
+C:\Users\Oseni\Desktop\Data Science Implementation\fingerprint-scoofing\74034_3_En_4_MOESM1_ESM\FVC2000\Dbs\Db1_a\100_1.tif,1,Genuine,640,8,1,uniform,8x8,10
+C:\Users\Oseni\Desktop\Data Science Implementation\fingerprint-scoofing\74034_3_En_4_MOESM1_ESM\FVC2000\Dbs\Db1_a\100_2.tif,1,Genuine,640,8,1,uniform,8x8,10
+C:\Users\Oseni\Desktop\Data Science Implementation\fingerprint-scoofing\74034_3_En_4_MOESM1_ESM\FVC2000\Dbs\Db1_a\100_3.tif,1,Genuine,640,8,1,uniform,8x8,10
+C:\Users\Oseni\Desktop\Data Science Implementation\fingerprint-scoofing\74034_3_En_4_MOESM1_ESM\FVC2000\Dbs\Db1_a\100_4.tif,1,Genuine,640,8,1,uniform,8x8,10
+C:\Users\Oseni\Desktop\Data Science Implementation\fingerprint-scoofing\74034_3_En_4_MOESM1_ESM\FVC2000\Dbs\Db1_a\100_5.tif,1,Genuine,640,8,1,uniform,8x8,10
+C:\Users\Oseni\Desktop\Data Science Implementation\fingerprint-scoofing\74034_3_En_4_MOESM1_ESM\FVC2000\Dbs\Db4_a\100_1.tif,0,Fake,640,8,1,uniform,8x8,10
+C:\Users\Oseni\Desktop\Data Science Implementation\fingerprint-scoofing\74034_3_En_4_MOESM1_ESM\FVC2000\Dbs\Db4_a\100_2.tif,0,Fake,640,8,1,uniform,8x8,10
+C:\Users\Oseni\Desktop\Data Science Implementation\fingerprint-scoofing\74034_3_En_4_MOESM1_ESM\FVC2000\Dbs\Db4_a\100_3.tif,0,Fake,640,8,1,uniform,8x8,10
+C:\Users\Oseni\Desktop\Data Science Implementation\fingerprint-scoofing\74034_3_En_4_MOESM1_ESM\FVC2000\Dbs\Db4_a\100_4.tif,0,Fake,640,8,1,uniform,8x8,10
+C:\Users\Oseni\Desktop\Data Science Implementation\fingerprint-scoofing\74034_3_En_4_MOESM1_ESM\FVC2000\Dbs\Db4_a\100_5.tif,0,Fake,640,8,1,uniform,8x8,10

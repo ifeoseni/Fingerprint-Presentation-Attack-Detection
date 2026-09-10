@@ -1,0 +1,8 @@
+numpy
+scikit-learn
+scikit-image
+opencv-python
+Pillow
+pandas
+matplotlib
+joblib>=1.6.0  # 1.6.0 fixes Windows+Python3.13 loky multiprocessing crash

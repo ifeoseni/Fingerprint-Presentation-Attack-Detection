@@ -1,0 +1,28 @@
+============================================================
+LBP FEATURE EXTRACTION REPORT
+============================================================
+Generated: 2026-09-04 10:27:17
+
+Local Binary Pattern features were extracted from each
+preprocessed fingerprint image using uniform LBP with
+8 sampling points and radius 1. Each image
+was divided into an 8 × 8 spatial grid,
+and a 10-bin normalised histogram was computed for each
+block, resulting in a 640-dimensional feature vector
+per image.
+
+------------------------------------------------------------
+Dataset                    : FVC2000
+Total images processed     : 10
+Images successfully proc.  : 10
+Images failed              : 0
+Number of classes          : 2
+Feature dimension          : 640
+Feature extraction method  : LBP (Local Binary Pattern)
+LBP method                 : uniform
+LBP points (P)             : 8
+LBP radius (R)             : 1
+LBP blocks                 : 8 × 8
+LBP bins per block         : 10
+Feature matrix shape       : (10, 640)
+Feature matrix dtype       : float32

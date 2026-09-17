@@ -1,0 +1,122 @@
+{
+  "FVC2000": {
+    "SVM": {
+      "fit_seconds": 5.818,
+      "fit_minutes": 0.1,
+      "predict_seconds_total": 1.0834,
+      "predict_ms_per_sample": 0.33855,
+      "n_test": 3200,
+      "feature_extraction_seconds": 174.27,
+      "feature_extraction_minutes": 2.9,
+      "total_cell_seconds": 182.03,
+      "total_cell_minutes": 3.03
+    },
+    "KNN": {
+      "fit_seconds": 4.18,
+      "fit_minutes": 0.07,
+      "predict_seconds_total": 0.23,
+      "predict_ms_per_sample": 0.07188,
+      "n_test": 3200,
+      "feature_extraction_seconds": 174.27,
+      "feature_extraction_minutes": 2.9,
+      "total_cell_seconds": 179.92,
+      "total_cell_minutes": 3.0
+    }
+  },
+  "SOCOFing_Easy": {
+    "KNN": {
+      "fit_seconds": 83.013,
+      "fit_minutes": 1.38,
+      "predict_seconds_total": 8.266,
+      "predict_ms_per_sample": 1.72749,
+      "n_test": 4785,
+      "feature_extraction_seconds": 1070.75,
+      "feature_extraction_minutes": 17.85,
+      "total_cell_seconds": 1162.03,
+      "total_cell_minutes": 19.37
+    },
+    "SVM": {
+      "fit_seconds": 4663.123,
+      "fit_minutes": 77.72,
+      "predict_seconds_total": 29.9797,
+      "predict_ms_per_sample": 6.26535,
+      "n_test": 4785,
+      "feature_extraction_seconds": 1452.07,
+      "feature_extraction_minutes": 24.2,
+      "total_cell_seconds": 6145.18,
+      "total_cell_minutes": 102.42
+    }
+  },
+  "SOCOFing_Medium": {
+    "KNN": {
+      "fit_seconds": 64.971,
+      "fit_minutes": 1.08,
+      "predict_seconds_total": 6.0569,
+      "predict_ms_per_sample": 1.31615,
+      "n_test": 4602,
+      "feature_extraction_seconds": 970.43,
+      "feature_extraction_minutes": 16.17,
+      "total_cell_seconds": 1041.46,
+      "total_cell_minutes": 17.36
+    },
+    "SVM": {
+      "fit_seconds": 3137.494,
+      "fit_minutes": 52.29,
+      "predict_seconds_total": 16.4411,
+      "predict_ms_per_sample": 3.5726,
+      "n_test": 4602,
+      "feature_extraction_seconds": 566.17,
+      "feature_extraction_minutes": 9.44,
+      "total_cell_seconds": 3720.11,
+      "total_cell_minutes": 62.0
+    }
+  },
+  "SOCOFing_Hard": {
+    "KNN": {
+      "fit_seconds": 123.115,
+      "fit_minutes": 2.05,
+      "predict_seconds_total": 9.392,
+      "predict_ms_per_sample": 2.34155,
+      "n_test": 4011,
+      "feature_extraction_seconds": 1079.95,
+      "feature_extraction_minutes": 18.0,
+      "total_cell_seconds": 1212.46,
+      "total_cell_minutes": 20.21
+    },
+    "SVM": {
+      "fit_seconds": 2799.39,
+      "fit_minutes": 46.66,
+      "predict_seconds_total": 9.0191,
+      "predict_ms_per_sample": 2.2486,
+      "n_test": 4011,
+      "feature_extraction_seconds": 482.3,
+      "feature_extraction_minutes": 8.04,
+      "total_cell_seconds": 3290.71,
+      "total_cell_minutes": 54.85
+    }
+  },
+  "SOCOFing_Combined": {
+    "KNN": {
+      "fit_seconds": 107.831,
+      "fit_minutes": 1.8,
+      "predict_seconds_total": 20.4004,
+      "predict_ms_per_sample": 1.85492,
+      "n_test": 10998,
+      "feature_extraction_seconds": 4610.75,
+      "feature_extraction_minutes": 76.85,
+      "total_cell_seconds": 4738.98,
+      "total_cell_minutes": 78.98
+    },
+    "SVM": {
+      "fit_seconds": 3327.544,
+      "fit_minutes": 55.46,
+      "predict_seconds_total": 49.658,
+      "predict_ms_per_sample": 4.51518,
+      "n_test": 10998,
+      "feature_extraction_seconds": 1267.37,
+      "feature_extraction_minutes": 21.12,
+      "total_cell_seconds": 4644.57,
+      "total_cell_minutes": 77.41
+    }
+  }
+}

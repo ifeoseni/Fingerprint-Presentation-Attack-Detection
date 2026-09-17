@@ -21,6 +21,37 @@ assert FEATURE_DIM == LBP_BLOCKS[0] * LBP_BLOCKS[1] * LBP_BINS, (
 )
 
 
+# ── Cached block-id map ─────────────────────────────────────────────────────
+# Every image in this pipeline is resized to the same TARGET_SIZE before feature
+# extraction, so the (row, col) -> block-index assignment is identical for every
+# call. Precomputing and caching it per image shape (instead of recomputing block
+# boundaries with a nested Python loop on every image) removes the dominant
+# per-image Python-level overhead in extract_lbp_features.
+_block_id_cache: dict = {}
+
+
+def _get_block_id_map(h: int, w: int) -> np.ndarray:
+    key = (h, w)
+    cached = _block_id_cache.get(key)
+    if cached is not None:
+        return cached
+
+    block_h = h // LBP_BLOCKS[0]
+    block_w = w // LBP_BLOCKS[1]
+    block_id = np.empty((h, w), dtype=np.int64)
+
+    for row in range(LBP_BLOCKS[0]):
+        start_y = row * block_h
+        end_y = (row + 1) * block_h if row < LBP_BLOCKS[0] - 1 else h
+        for col in range(LBP_BLOCKS[1]):
+            start_x = col * block_w
+            end_x = (col + 1) * block_w if col < LBP_BLOCKS[1] - 1 else w
+            block_id[start_y:end_y, start_x:end_x] = row * LBP_BLOCKS[1] + col
+
+    _block_id_cache[key] = block_id
+    return block_id
+
+
 def extract_lbp_features(image: np.ndarray) -> np.ndarray:
     """
     Extract block-based Local Binary Pattern (LBP) features from a grayscale image.
@@ -60,30 +91,24 @@ def extract_lbp_features(image: np.ndarray) -> np.ndarray:
     # Step 1 — Compute LBP map (values in [0, LBP_POINTS+1])
     lbp = local_binary_pattern(image, P=LBP_POINTS, R=LBP_RADIUS, method=LBP_METHOD)
 
-    # Step 2 — Compute block dimensions (last row/col absorbs any remainder pixels)
-    h, w    = image.shape
-    block_h = h // LBP_BLOCKS[0]
-    block_w = w // LBP_BLOCKS[1]
+    # Step 2 — Look up the (cached) block-id assignment for this image size
+    # (last row/col absorbs any remainder pixels, identical boundaries to the
+    # original per-image nested-loop computation).
+    h, w = image.shape
+    block_id = _get_block_id_map(h, w)
 
-    histograms = []
+    # Steps 3 & 4 — Per-block histogram + L1-normalisation, vectorised.
+    # Combine (block_id, lbp_code) into a single flat index in [0, n_blocks*LBP_BINS)
+    # so a single bincount call recovers every block's raw histogram counts at once,
+    # in the same row-major block order the original nested loop produced.
+    n_blocks = LBP_BLOCKS[0] * LBP_BLOCKS[1]
+    combined = block_id * LBP_BINS + lbp.astype(np.int64)
+    flat_counts = np.bincount(combined.ravel(), minlength=n_blocks * LBP_BINS)[: n_blocks * LBP_BINS]
 
-    # Steps 3 & 4 — Per-block histogram + L1-normalisation
-    for row in range(LBP_BLOCKS[0]):
-        for col in range(LBP_BLOCKS[1]):
-            start_y = row * block_h
-            end_y   = (row + 1) * block_h if row < LBP_BLOCKS[0] - 1 else h
-            start_x = col * block_w
-            end_x   = (col + 1) * block_w if col < LBP_BLOCKS[1] - 1 else w
-
-            block = lbp[start_y:end_y, start_x:end_x]
-
-            hist, _ = np.histogram(block.ravel(), bins=LBP_BINS, range=_LBP_RANGE)
-
-            # L1-normalise: eps avoids division by zero on blank blocks
-            hist = hist.astype(np.float32)
-            hist /= hist.sum() + 1e-7
-
-            histograms.append(hist)
+    histograms_arr = flat_counts.reshape(n_blocks, LBP_BINS).astype(np.float32)
+    # L1-normalise each block: eps avoids division by zero on blank blocks
+    histograms_arr /= histograms_arr.sum(axis=1, keepdims=True) + 1e-7
+    histograms = list(histograms_arr)
 
     # Step 5 — Concatenate
     feature_vector = np.concatenate(histograms).astype(np.float32)

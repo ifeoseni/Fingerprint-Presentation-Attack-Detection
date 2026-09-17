@@ -1,0 +1,87 @@
+{
+  "FVC2000": {
+    "condition": "FVC2000",
+    "n_train": 160,
+    "n_test": 3200,
+    "feature_extraction_seconds": 119.93,
+    "feature_extraction_minutes": 2.0,
+    "SVM": {
+      "fit_seconds": 0.031,
+      "predict_seconds_total": 0.1694,
+      "predict_ms_per_sample": 0.05293
+    },
+    "KNN": {
+      "fit_seconds": 0.004,
+      "predict_seconds_total": 0.0657,
+      "predict_ms_per_sample": 0.02055
+    }
+  },
+  "Easy": {
+    "condition": "Easy",
+    "n_train": 9600,
+    "n_test": 4785,
+    "feature_extraction_seconds": 677.92,
+    "feature_extraction_minutes": 11.3,
+    "SVM": {
+      "fit_seconds": 171.61,
+      "predict_seconds_total": 18.1262,
+      "predict_ms_per_sample": 3.78813
+    },
+    "KNN": {
+      "fit_seconds": 0.215,
+      "predict_seconds_total": 2.4409,
+      "predict_ms_per_sample": 0.51011
+    }
+  },
+  "Medium": {
+    "condition": "Medium",
+    "n_train": 9600,
+    "n_test": 4602,
+    "feature_extraction_seconds": 660.23,
+    "feature_extraction_minutes": 11.0,
+    "SVM": {
+      "fit_seconds": 88.316,
+      "predict_seconds_total": 7.4202,
+      "predict_ms_per_sample": 1.61238
+    },
+    "KNN": {
+      "fit_seconds": 0.118,
+      "predict_seconds_total": 1.3559,
+      "predict_ms_per_sample": 0.29463
+    }
+  },
+  "Hard": {
+    "condition": "Hard",
+    "n_train": 9600,
+    "n_test": 4011,
+    "feature_extraction_seconds": 606.03,
+    "feature_extraction_minutes": 10.1,
+    "SVM": {
+      "fit_seconds": 63.342,
+      "predict_seconds_total": 5.0234,
+      "predict_ms_per_sample": 1.2524
+    },
+    "KNN": {
+      "fit_seconds": 0.129,
+      "predict_seconds_total": 1.5619,
+      "predict_ms_per_sample": 0.3894
+    }
+  },
+  "Combined": {
+    "condition": "Combined",
+    "n_train": 9600,
+    "n_test": 10998,
+    "feature_extraction_seconds": 1670.88,
+    "feature_extraction_minutes": 27.85,
+    "SVM": {
+      "fit_seconds": 115.074,
+      "predict_seconds_total": 24.4343,
+      "predict_ms_per_sample": 2.22171
+    },
+    "KNN": {
+      "fit_seconds": 0.117,
+      "predict_seconds_total": 4.1884,
+      "predict_ms_per_sample": 0.38084
+    }
+  }
+}

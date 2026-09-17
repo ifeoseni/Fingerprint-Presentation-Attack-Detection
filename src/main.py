@@ -1,11 +1,63 @@
 import os
+import time
+import json
 import numpy as np
 from sklearn.model_selection import train_test_split
 from config import FVC2000_DIR, SOCOFING_DIR, RANDOM_STATE, STRATIFY, TEST_SIZE
 from preprocess import preprocess_image
 from features import extract_lbp_features
-from models import get_svm_pipeline, get_knn_pipeline
+from models import get_svm_pipeline, get_knn_pipeline, refit_svm_with_probability
 from evaluate import evaluate_model, plot_roc_curve
+
+
+def record_actual_timing(dataset_name: str, model_name: str, fit_seconds: float,
+                          predict_seconds: float, n_test: int,
+                          feature_extraction_seconds: float = None,
+                          total_cell_seconds: float = None) -> None:
+    """
+    Append timing for a single (dataset, model) run — measured on the actual
+    fit/predict calls that produced the reported results, not a separate
+    re-fit benchmark — to RESULTS_DIR/actual_run_timing.json.
+
+    feature_extraction_seconds and total_cell_seconds, when provided, are
+    measured in THIS SAME run (not stitched together from a separate session/
+    benchmark) and are the authoritative numbers for reporting total pipeline
+    cost — do not reconstruct "total" by adding numbers from different runs,
+    since system load, disk cache state, etc. make that unreliable.
+    """
+    from config import RESULTS_DIR
+    timing_path = os.path.join(RESULTS_DIR, "actual_run_timing.json")
+
+    all_results = {}
+    if os.path.exists(timing_path):
+        with open(timing_path, "r") as f:
+            all_results = json.load(f)
+
+    per_sample_ms = (predict_seconds / n_test) * 1000 if n_test else None
+    entry = {
+        "fit_seconds": round(fit_seconds, 3),
+        "fit_minutes": round(fit_seconds / 60, 2),
+        "predict_seconds_total": round(predict_seconds, 4),
+        "predict_ms_per_sample": round(per_sample_ms, 5) if per_sample_ms else None,
+        "n_test": n_test,
+    }
+    if feature_extraction_seconds is not None:
+        entry["feature_extraction_seconds"] = round(feature_extraction_seconds, 2)
+        entry["feature_extraction_minutes"] = round(feature_extraction_seconds / 60, 2)
+    if total_cell_seconds is not None:
+        entry["total_cell_seconds"] = round(total_cell_seconds, 2)
+        entry["total_cell_minutes"] = round(total_cell_seconds / 60, 2)
+
+    all_results.setdefault(dataset_name, {})[model_name] = entry
+
+    with open(timing_path, "w") as f:
+        json.dump(all_results, f, indent=2)
+
+    msg = (f"  [TIMING] Fit: {fit_seconds:.2f}s ({fit_seconds/60:.2f} min) | "
+           f"Predict: {predict_seconds:.4f}s total ({per_sample_ms:.5f} ms/sample)")
+    if total_cell_seconds is not None:
+        msg += f" | TOTAL CELL: {total_cell_seconds:.1f}s ({total_cell_seconds/60:.2f} min)"
+    print(msg + f" | saved to {timing_path}")
 
 
 def _load_images_from_dir(directory: str, label: int, extension: str,
@@ -219,13 +271,20 @@ def load_socofing_data(sample_fraction: float = 1.0):
     return X_train, X_test, y_train, y_test
 
 
-def run_pipeline(dataset_name: str, X_train, X_test, y_train, y_test) -> None:
+def run_pipeline(dataset_name: str, X_train, X_test, y_train, y_test,
+                  feature_extraction_seconds: float = None) -> None:
     """
     Train SVM and KNN classifiers on (X_train, y_train) and evaluate on (X_test, y_test).
 
     BUGFIX: The results CSV is cleared at the start of each dataset's pipeline run
     to prevent duplicate rows from accumulating across multiple invocations of the
     same experiment. Each full run produces exactly 2 rows: one SVM, one KNN.
+
+    feature_extraction_seconds: if the caller timed the data-loading/feature-
+    extraction step (e.g. load_fvc2000_data()) before calling this function,
+    pass that duration here so record_actual_timing can report a true
+    per-model total (feature extraction + this model's own fit/predict/eval),
+    measured in this same run rather than stitched from a separate session.
     """
     from config import RESULTS_DIR
     import os
@@ -243,18 +302,43 @@ def run_pipeline(dataset_name: str, X_train, X_test, y_train, y_test) -> None:
 
     import joblib
     for model_name, get_pipeline in [('SVM', get_svm_pipeline), ('KNN', get_knn_pipeline)]:
+        model_block_start = time.perf_counter()
         print(f"\n--- Training {model_name} (GridSearchCV) ---")
         clf = get_pipeline(y_train)
+        t0 = time.perf_counter()
         with joblib.parallel_backend('threading'):
             clf.fit(X_train, y_train)
+        fit_seconds = time.perf_counter() - t0
         print(f"  Best params: {clf.best_params_}")
         print(f"  Best CV ROC-AUC: {clf.best_score_:.4f}")
 
-        y_pred = clf.predict(X_test)
-        y_prob = clf.predict_proba(X_test)[:, 1]
+        if model_name == 'SVM':
+            # Search ran with probability=False (fast); refit the winning
+            # configuration once with probability=True for predict_proba.
+            # This refit is a real, necessary cost of producing a usable final
+            # model, so it counts toward total fit time reported in 4.3.
+            t0 = time.perf_counter()
+            eval_model = refit_svm_with_probability(clf, X_train, y_train)
+            fit_seconds += time.perf_counter() - t0
+        else:
+            eval_model = clf
+
+        t0 = time.perf_counter()
+        y_pred = eval_model.predict(X_test)
+        y_prob = eval_model.predict_proba(X_test)[:, 1]
+        predict_seconds = time.perf_counter() - t0
 
         evaluate_model(y_test, y_pred, y_prob, model_name, dataset_name)
         plot_roc_curve(y_test, y_prob, model_name, dataset_name)
+
+        model_block_seconds = time.perf_counter() - model_block_start
+        total_cell_seconds = (
+            feature_extraction_seconds + model_block_seconds
+            if feature_extraction_seconds is not None else None
+        )
+        record_actual_timing(dataset_name, model_name, fit_seconds, predict_seconds, len(X_test),
+                              feature_extraction_seconds=feature_extraction_seconds,
+                              total_cell_seconds=total_cell_seconds)
 
 
 if __name__ == "__main__":

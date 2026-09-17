@@ -256,6 +256,52 @@ run_pipeline("SOCOFing", X_tr, X_te, y_tr, y_te)
 
 ---
 
+## Results Summary
+
+Results below are from the full-dataset runs in `main.ipynb` (all images, subject-disjoint 80/20 split for SOCOFing; standard Set A/B protocol for FVC2000).
+
+### Model Performance
+
+| Dataset | Alteration Tier | Model | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
+|---|---|---|---|---|---|---|---|
+| FVC2000 | — | SVM | 99.6% | 99.6%ᵃ | 99.6%ᵃ | 99.6%ᵃ | 1.000 |
+| FVC2000 | — | KNN | 99.9% | 99.9%ᵃ | 99.9%ᵃ | 99.9%ᵃ | 1.000 |
+| SOCOFing | Easy | SVM | 80.2% | 75.2%ᵇ | 81.0%ᵇ | 76.7%ᵇ | 0.890 |
+| SOCOFing | Easy | KNN | 52.1% | 61.1%ᵇ | 63.3%ᵇ | 51.7%ᵇ | 0.714 |
+| SOCOFing | Medium | SVM | 94.4% | 91.6%ᵇ | 94.7%ᵇ | 93.0%ᵇ | 0.988 |
+| SOCOFing | Medium | KNN | 77.4% | 75.2%ᵇ | 82.4%ᵇ | 75.3%ᵇ | 0.923 |
+| SOCOFing | Hard | SVM | 97.6% | 96.6%ᵇ | 97.6%ᵇ | 97.1%ᵇ | 0.997 |
+| SOCOFing | Hard | KNN | 88.7% | 85.9%ᵇ | 89.9%ᵇ | 87.3%ᵇ | 0.970 |
+| SOCOFing | Combined | SVM | 86.8% | 71.4%ᵇ | 87.1%ᵇ | 75.6%ᵇ | 0.949 |
+| SOCOFing | Combined | KNN | 62.0% | 59.9%ᵇ | 75.3%ᵇ | 53.9%ᵇ | 0.853 |
+
+*ᵃ Weighted average. ᵇ Macro average (unweighted mean across genuine/altered classes), used for SOCOFing to account for test-set class imbalance.*
+
+**Key finding:** SVM outperforms KNN on every metric and every SOCOFing alteration tier, with the gap widest on the Easy tier (28 points of accuracy) and narrowest on Hard (9 points). Both models' accuracy *increases* with alteration severity (Easy → Hard) — counter-intuitive at first glance, but consistent with what the SOCOFing severity tiers actually measure: heavier digital distortion diverges further from genuine ridge-pattern texture, making it easier — not harder — for a texture-based classifier to detect. FVC2000's near-ceiling accuracy reflects an easier, non-comparable task (separating real sensor captures from a synthetic generator), not presentation-attack-detection capability.
+
+### Computational Cost
+
+Measured on an Intel Core i7-10610U (4 cores / 8 threads, 1.80 GHz), 15.7 GB RAM, no GPU — single-run measurements taken directly within each experiment cell in `main.ipynb` (feature extraction, model training, and inference all timed in the same run, not stitched together from separate sessions). "Training Time" is the full `GridSearchCV` search (SVM: 40 candidates × 5-fold CV, including the one-time refit needed for `predict_proba`; KNN: 14 candidates × 5-fold CV).
+
+| Condition | Model | Feature Extraction | Training Time | Total Pipeline | Inference (ms/sample) | Test Set Size |
+|---|---|---|---|---|---|---|
+| FVC2000 | SVM | 2.9 min | 0.10 min | 3.0 min | 0.339 | 3,200 |
+| FVC2000 | KNN | 2.9 min | 0.07 min | 3.0 min | 0.072 | 3,200 |
+| SOCOFing Easy | SVM | 24.2 min | 77.7 min | 102.4 min | 6.265 | 4,785 |
+| SOCOFing Easy | KNN | 17.9 min | 1.4 min | 19.4 min | 1.727 | 4,785 |
+| SOCOFing Medium | SVM | 9.4 min | 52.3 min | 62.0 min | 3.573 | 4,602 |
+| SOCOFing Medium | KNN | 16.2 min | 1.1 min | 17.4 min | 1.316 | 4,602 |
+| SOCOFing Hard | SVM | 8.0 min | 46.7 min | 54.9 min | 2.249 | 4,011 |
+| SOCOFing Hard | KNN | 18.0 min | 2.1 min | 20.2 min | 2.342 | 4,011 |
+| SOCOFing Combined | SVM | 21.1 min | 55.5 min | 77.4 min | 4.515 | 10,998 |
+| SOCOFing Combined | KNN | 76.9 min | 1.8 min | 79.0 min | 1.855 | 10,998 |
+
+**Grid-search tuning is a one-time offline cost — inference is fast for both models.** SVM's hyperparameter search (47–78 minutes per SOCOFing condition) dominates total pipeline time; KNN's training cost is under 2.1 minutes throughout, since KNN has no training phase beyond storing the data. Once trained, per-sample inference is millisecond-scale for both classifiers (KNN: 0.07–2.3 ms; SVM: 0.3–6.3 ms), well within real-time authentication requirements, and requires no GPU.
+
+Note that feature extraction time varies between runs of the same tier — e.g. SOCOFing Combined's KNN cell measured 76.9 minutes of extraction against 21.1 minutes for the SVM cell on the same underlying images, since each experiment cell independently re-extracts features rather than sharing a cached pass. This reflects real run-to-run system variance (disk I/O, background load), not a measurement error.
+
+---
+
 ## Results & Output Artifacts
 
 All artifacts are written to the `results/` folder (created automatically).

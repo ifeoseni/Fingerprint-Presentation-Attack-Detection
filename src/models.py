@@ -44,10 +44,20 @@ def get_svm_pipeline(y_train=None) -> GridSearchCV:
     Tuning:
       GridSearchCV over SVM_PARAM_GRID with stratified cross-validation,
       scored by ROC AUC.
+
+    NOTE ON probability=False: sklearn's "roc_auc" scorer prefers
+    decision_function over predict_proba when both are available, so
+    GridSearchCV never needs predict_proba during the search itself.
+    SVC(probability=True) triggers an expensive internal 5-fold Platt-scaling
+    calibration on every single .fit() call (measured ~5x slower per fit) —
+    paying that cost on all (candidates x folds) fits during search is pure
+    waste. Search with probability=False here; call refit_svm_with_probability()
+    on the result to get a predict_proba-capable model for final evaluation,
+    paying the calibration cost exactly once instead of on every search fit.
     """
     pipeline = Pipeline([
         ("scaler", StandardScaler()),
-        ("svm",    SVC(probability=True, random_state=RANDOM_STATE, cache_size=500)),
+        ("svm",    SVC(probability=False, random_state=RANDOM_STATE, cache_size=500)),
     ])
 
     param_grid = {f"svm__{k}": v for k, v in SVM_PARAM_GRID.items()}
@@ -61,6 +71,27 @@ def get_svm_pipeline(y_train=None) -> GridSearchCV:
         n_jobs     = N_JOBS,
         verbose    = 1,
     )
+
+
+def refit_svm_with_probability(svm_grid: GridSearchCV, X_train, y_train) -> Pipeline:
+    """
+    Refit the winning SVM configuration from an already-fitted GridSearchCV
+    (searched with probability=False) as a single probability=True model,
+    for use in final evaluation (predict_proba / ROC curves).
+
+    This pays the ~5x Platt-scaling calibration cost exactly once, instead of
+    on every candidate x fold fit during the grid search.
+    """
+    best_svm_params = {
+        k.replace("svm__", ""): v
+        for k, v in svm_grid.best_params_.items()
+    }
+    final_pipeline = Pipeline([
+        ("scaler", StandardScaler()),
+        ("svm",    SVC(probability=True, random_state=RANDOM_STATE, cache_size=500, **best_svm_params)),
+    ])
+    final_pipeline.fit(X_train, y_train)
+    return final_pipeline
 
 
 def get_knn_pipeline(y_train=None) -> GridSearchCV:
